@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Arcade Space — 8-Bit Mobile Hub</title>
+  
+  <!-- Retro 8-Bit & Mobile Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       MOBILE-ONLY RETRO 8-BIT & 20% NEON LIGHT SYSTEM
+       ========================================================================== */
+    :root {
+      --bg-dark: #080711;
+      --bg-card: #141126;
+      --bg-card-press: #1d1838;
+      
+      /* 20% Neon Accents */
+      --neon-cyan: #00F0FF;
+      --neon-cyan-glow: rgba(0, 240, 255, 0.20);
+      --neon-magenta: #FF007F;
+      --neon-magenta-glow: rgba(255, 0, 127, 0.20);
+      --neon-amber: #FFB703;
+      --neon-amber-glow: rgba(255, 183, 3, 0.20);
+      --neon-green: #00FF88;
+
+      --border-retro: #2b244d;
+      --text-muted: #9990bf;
+      --text-white: #f5f3ff;
+
+      --font-pixel: 'Press Start 2P', monospace;
+      --font-ui: 'Chakra Petch', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: #030206;
+      color: var(--text-white);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 20%, rgba(25, 18, 52, 0.8) 0%, #030206 75%),
+        linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 28px 28px, 28px 28px;
+    }
+
+    /* Subtle CRT Scanline (Atmospheric) */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      background: linear-gradient(
+        to bottom,
+        rgba(255,255,255,0),
+        rgba(255,255,255,0) 50%,
+        rgba(0, 0, 0, 0.25) 50%,
+        rgba(0, 0, 0, 0.25)
+      );
+      background-size: 100% 3px;
+      opacity: 0.6;
+    }
+
+    /* Ambient 20% Neon Atmosphere Behind Mobile View */
+    .ambient-glow-top {
+      position: fixed;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 320px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.16) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* Mobile App Container (Optimized for Mobile Use Only) */
+    .mobile-app {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-dark);
+      position: relative;
+      z-index: 10;
+      border-left: 1px solid rgba(43, 36, 77, 0.4);
+      border-right: 1px solid rgba(43, 36, 77, 0.4);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.85);
+      padding-bottom: 24px;
+    }
+
+    /* Top Sticky App Bar */
+    .mobile-app-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(12, 10, 22, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 2px solid var(--border-retro);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .btn-app-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #151126;
+      border: 1.5px solid var(--border-retro);
+      color: var(--neon-cyan);
+      padding: 7px 11px;
+      border-radius: 8px;
+      font-family: var(--font-pixel);
+      font-size: clamp(0.46rem, 2vw, 0.58rem);
+      line-height: 1.2;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.12s ease;
+      cursor: pointer;
+    }
+
+    .btn-app-back:hover {
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.35);
+    }
+
+    .btn-app-back:active {
+      transform: scale(0.95);
+      background: var(--neon-cyan-glow);
+    }
+
+    .btn-back-arrow {
+      font-size: 0.82rem;
+      line-height: 1;
+      display: inline-block;
+      transition: transform 0.15s ease;
+    }
+
+    .btn-app-back:hover .btn-back-arrow {
+      transform: translateX(-2px);
+    }
+
+    .btn-app-sound {
+      background: #151126;
+      border: 1.5px solid var(--border-retro);
+      color: var(--neon-amber);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s ease;
+    }
+
+    .btn-app-sound:active {
+      transform: scale(0.95);
+    }
+
+    /* 8-Bit Coin Logo Header */
+    .logo-container {
+      text-align: center;
+      padding: 18px 14px 14px;
+    }
+
+    .mobile-logo-row {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .mobile-logo-title {
+      font-family: var(--font-pixel);
+      font-size: 1.15rem;
+      letter-spacing: 1.5px;
+      color: #ffffff;
+      text-shadow: 
+        0 0 10px rgba(0, 240, 255, 0.45),
+        0 0 20px rgba(0, 240, 255, 0.2),
+        2px 2px 0 #120e26;
+    }
+
+    .mobile-logo-title span {
+      color: var(--neon-cyan);
+    }
+
+    /* 8-Bit Pixel Coin Animation */
+    .coin-8bit {
+      width: 24px;
+      height: 24px;
+      flex-shrink: 0;
+      animation: coin-bob 2.2s ease-in-out infinite;
+      filter: drop-shadow(0 0 6px rgba(255, 183, 3, 0.5));
+    }
+
+    .coin-8bit.alt {
+      animation-delay: 1.1s;
+    }
+
+    @keyframes coin-bob {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-3px) rotate(6deg) scale(1.06);
+        filter: drop-shadow(0 0 10px rgba(255, 183, 3, 0.8));
+      }
+    }
+
+    /* Minimal Student Status Card */
+    .student-card {
+      margin: 0 14px 16px;
+      background: #110e21;
+      border: 1.5px solid var(--border-retro);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .student-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .student-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #483d8b, #1d1540);
+      border: 1.5px solid var(--neon-cyan);
+      box-shadow: 0 0 8px var(--neon-cyan-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-pixel);
+      font-size: 0.85rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .student-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .student-status {
+      font-family: var(--font-pixel);
+      font-size: 0.52rem;
+      color: var(--neon-green);
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
+
+    .words-ready-badge {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .words-count-num {
+      font-family: var(--font-pixel);
+      font-size: 0.95rem;
+      color: var(--neon-amber);
+      text-shadow: 0 0 6px var(--neon-amber-glow);
+    }
+
+    .words-count-lbl {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Mobile Game Cards Stack */
+    .mobile-games-stack {
+      padding: 0 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+
+    /* Touch-Optimized Game Card */
+    .mobile-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-retro);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+      animation: card-appear 0.35s ease-out backwards;
+    }
+
+    .mobile-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--card-accent, var(--neon-cyan));
+      opacity: 0.85;
+      box-shadow: 0 0 8px var(--card-accent, var(--neon-cyan));
+    }
+
+    @keyframes card-appear {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mobile-card.theme-airstrike {
+      --card-accent: #00F0FF;
+      --card-glow: rgba(0, 240, 255, 0.45);
+      animation-delay: 0s;
+    }
+
+    .mobile-card.theme-duel {
+      --card-accent: var(--neon-magenta);
+      --card-glow: var(--neon-magenta-glow);
+      animation-delay: 0.08s;
+    }
+
+    .mobile-card.theme-poker {
+      --card-accent: var(--neon-amber);
+      --card-glow: var(--neon-amber-glow);
+      animation-delay: 0.16s;
+    }
+
+    .mobile-card.theme-cartridge {
+      --card-accent: var(--neon-amber);
+      --card-glow: var(--neon-amber-glow);
+      background: linear-gradient(180deg, #141126 0%, #0d0a1b 100%);
+      animation-delay: 0.24s;
+    }
+
+    .card-header-two-col {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .card-header-titles {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .card-icon-box {
+      aspect-ratio: 1 / 1;
+      align-self: stretch;
+      border-radius: 8px;
+      background: #0f0c1d;
+      border: 1.5px solid var(--card-accent, var(--neon-cyan));
+      box-shadow: 0 0 10px var(--card-glow, var(--neon-cyan-glow));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      flex-shrink: 0;
+      overflow: hidden;
+      object-fit: contain;
+    }
+
+    .card-icon-box.card-icon-logo {
+      width: 72px;
+      height: 50px;
+      aspect-ratio: auto;
+      padding: 3px 5px;
+      background: #08101e;
+      border: 1.5px solid var(--card-accent, #00F0FF);
+      box-shadow: 0 0 10px var(--card-glow, rgba(0, 240, 255, 0.45));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .card-icon-box svg {
+      max-width: 65%;
+      max-height: 65%;
+      object-fit: contain;
+    }
+
+    .card-icon-box img,
+    .card-icon-box .card-logo-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.5));
+    }
+
+    .card-title {
+      font-family: var(--font-pixel);
+      font-size: 0.92rem;
+      line-height: 1.2;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .card-season-subtitle {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-pixel);
+      font-size: 0.58rem;
+      letter-spacing: 0.16em;
+      color: #facc15;
+      text-shadow: 0 0 8px rgba(250, 204, 21, 0.7);
+      background: rgba(250, 204, 21, 0.12);
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      border-radius: 4px;
+      padding: 3px 7px;
+      margin-top: 3px;
+      margin-bottom: 2px;
+      width: fit-content;
+      text-transform: uppercase;
+      box-shadow: 0 0 10px rgba(250, 204, 21, 0.25), inset 0 0 4px rgba(250, 204, 21, 0.1);
+    }
+
+    .card-subtitle {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--card-accent, var(--neon-cyan));
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+      margin: 0;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-short-desc {
+      font-size: 0.8rem;
+      line-height: 1.35;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .card-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-stat-badge {
+      font-family: var(--font-pixel);
+      font-size: 0.62rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: #0b0917;
+      border: 1px solid var(--card-accent, var(--neon-cyan));
+      color: var(--card-accent, var(--neon-cyan));
+      display: inline-flex;
+      align-items: center;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+
+    .card-in-dev-pill {
+      font-family: var(--font-pixel);
+      font-size: 0.62rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 179, 0, 0.12);
+      border: 1px dashed var(--neon-amber);
+      color: var(--neon-amber);
+      display: inline-flex;
+      align-items: center;
+      letter-spacing: 0.5px;
+      font-weight: 800;
+    }
+
+    .mobile-btn-cartridge.in-dev-btn {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #0a0815;
+      border: 2px dashed rgba(255, 179, 0, 0.5);
+      border-radius: 12px;
+      color: rgba(255, 255, 255, 0.55);
+      font-family: var(--font-pixel);
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Mobile Big Tap Action Buttons (Thumb Optimized) */
+    .mobile-btn-play {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(180deg, #221b45 0%, #130f29 100%);
+      border: 2px solid var(--card-accent, var(--neon-cyan));
+      border-radius: 12px;
+      color: #ffffff;
+      font-family: var(--font-pixel);
+      font-size: 0.72rem;
+      text-decoration: none;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 0 10px var(--card-glow, var(--neon-cyan-glow));
+      transition: transform 0.1s ease, filter 0.1s ease;
+    }
+
+    .mobile-btn-play:active {
+      transform: scale(0.96);
+      filter: brightness(1.2);
+    }
+
+    /* Cartridge Slot Button */
+    .mobile-btn-cartridge {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: #0e0b1c;
+      border: 2px dashed var(--neon-cyan);
+      border-radius: 12px;
+      color: var(--neon-cyan);
+      font-family: var(--font-pixel);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      cursor: pointer;
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.12);
+      transition: all 0.12s ease;
+    }
+
+    .mobile-btn-cartridge:active {
+      transform: scale(0.96);
+      background: rgba(0, 240, 255, 0.15);
+      border-style: solid;
+      box-shadow: 0 0 16px var(--neon-cyan-glow);
+    }
+
+    /* Minimal Mobile Footer */
+    .mobile-footer {
+      text-align: center;
+      padding: 16px 14px 4px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-family: var(--font-pixel);
+      letter-spacing: 0.5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient 20% Neon Atmosphere -->
+  <div class="ambient-glow-top"></div>
+
+  <!-- Mobile App Frame (Mobile Use Only) -->
+  <div class="mobile-app">
+
+    <!-- Top Sticky Mobile Bar -->
+    <nav class="mobile-app-bar">
+      <a href="https://vuongtranvt1331-design.github.io/Lexical_Space/" class="btn-app-back" id="btnBackToLS" title="Return to Lexical Space">
+        <span class="btn-back-arrow" aria-hidden="true">←</span> Back to Lexical Space
+      </a>
+
+      <button id="btnSoundToggle" class="btn-app-sound" type="button" aria-label="Toggle 8-bit Sound">
+        <span id="soundIcon">🔊</span>
+      </button>
+    </nav>
+
+    <!-- Logo Header with 8-Bit Golden Pixel Coins -->
+    <header class="logo-container">
+      <div class="mobile-logo-row">
+        <!-- 8-Bit Pixel Coin (Left) -->
+        <svg class="coin-8bit" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="7" y="1" width="10" height="2" fill="#FFE066"/>
+          <rect x="7" y="21" width="10" height="2" fill="#D48B00"/>
+          <rect x="3" y="3" width="4" height="2" fill="#FFE066"/>
+          <rect x="17" y="3" width="4" height="2" fill="#FFE066"/>
+          <rect x="3" y="19" width="4" height="2" fill="#D48B00"/>
+          <rect x="17" y="19" width="4" height="2" fill="#D48B00"/>
+          <rect x="1" y="5" width="2" height="14" fill="#FFB703"/>
+          <rect x="21" y="5" width="2" height="14" fill="#FFB703"/>
+          <rect x="3" y="5" width="18" height="14" fill="#FFB703"/>
+          <rect x="7" y="3" width="10" height="18" fill="#FFC324"/>
+          <rect x="4" y="6" width="2" height="12" fill="#FFF2A3"/>
+          <rect x="6" y="4" width="12" height="2" fill="#FFF2A3"/>
+          <rect x="11" y="7" width="2" height="10" fill="#7D4E00"/>
+          <rect x="8" y="10" width="8" height="4" fill="#7D4E00"/>
+          <rect x="10" y="9" width="4" height="6" fill="#FFE066"/>
+          <rect x="11" y="11" width="2" height="2" fill="#FFFFFF"/>
+        </svg>
+
+        <h1 class="mobile-logo-title">ARCADE <span>SPACE</span></h1>
+
+        <!-- 8-Bit Pixel Coin (Right, Alt Timing) -->
+        <svg class="coin-8bit alt" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <rect x="7" y="1" width="10" height="2" fill="#FFE066"/>
+          <rect x="7" y="21" width="10" height="2" fill="#D48B00"/>
+          <rect x="3" y="3" width="4" height="2" fill="#FFE066"/>
+          <rect x="17" y="3" width="4" height="2" fill="#FFE066"/>
+          <rect x="3" y="19" width="4" height="2" fill="#D48B00"/>
+          <rect x="17" y="19" width="4" height="2" fill="#D48B00"/>
+          <rect x="1" y="5" width="2" height="14" fill="#FFB703"/>
+          <rect x="21" y="5" width="2" height="14" fill="#FFB703"/>
+          <rect x="3" y="5" width="18" height="14" fill="#FFB703"/>
+          <rect x="7" y="3" width="10" height="18" fill="#FFC324"/>
+          <rect x="4" y="6" width="2" height="12" fill="#FFF2A3"/>
+          <rect x="6" y="4" width="12" height="2" fill="#FFF2A3"/>
+          <rect x="11" y="7" width="2" height="10" fill="#7D4E00"/>
+          <rect x="8" y="10" width="8" height="4" fill="#7D4E00"/>
+          <rect x="10" y="9" width="4" height="6" fill="#FFE066"/>
+          <rect x="11" y="11" width="2" height="2" fill="#FFFFFF"/>
+        </svg>
+      </div>
+    </header>
+
+    <!-- Student Status Card (Essential Info Only) -->
+    <section class="student-card">
+      <div class="student-info">
+        <div id="playerAvatar" class="student-avatar">G</div>
+        <div style="min-width: 0;">
+          <div id="playerName" class="student-name">Guest Cowboy</div>
+          <div class="student-status">● READY TO PLAY</div>
+        </div>
+      </div>
+
+      <div class="words-ready-badge">
+        <span id="playerWordCount" class="words-count-num">--</span>
+        <span class="words-count-lbl">WORDS READY</span>
+      </div>
+    </section>
+
+    <!-- Dynamic Topic & Mode Mission Control -->
+    <section class="topic-select-card" style="margin: 0 14px 14px; background: #110e21; border: 1.5px solid var(--border-retro); border-radius: 12px; padding: 12px 14px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);">
+      
+      <!-- Vocabulary Mode Dropdown (Exactly: Full Vocabulary, Topic) -->
+      <div style="margin-bottom: 10px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <span style="font-family: var(--font-pixel); font-size: 0.65rem; color: var(--neon-yellow); letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+            <span>🎮</span> VOCABULARY MODE:
+          </span>
+          <span id="vocabModeBadge" style="font-family: var(--font-pixel); font-size: 0.55rem; padding: 3px 8px; border-radius: 6px; background: #0b0917; border: 1px solid var(--neon-yellow); color: var(--neon-yellow);">
+            FULL VOCABULARY
+          </span>
+        </div>
+        <div style="position: relative;">
+          <select id="arcadeVocabModeSelect" style="width: 100%; min-height: 42px; background: #17132e; border: 1.5px solid var(--border-retro); border-radius: 8px; color: #f5f3ff; font-family: var(--font-ui); font-size: 0.88rem; font-weight: 700; padding: 8px 12px; outline: none; cursor: pointer; transition: all 0.15s ease;">
+            <option value="full">Full Vocabulary</option>
+            <option value="topic">Topic</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Topic Mission Control (Active & required when Mode = Topic) -->
+      <div id="arcadeTopicWrapper" style="position: relative; transition: opacity 0.2s ease;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <span id="topicLabelText" style="font-family: var(--font-pixel); font-size: 0.65rem; color: var(--neon-cyan); letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px;">
+            <span>🎯</span> TARGET TOPIC:
+          </span>
+          <span id="topicWordCountBadge" style="font-family: var(--font-pixel); font-size: 0.55rem; padding: 3px 8px; border-radius: 6px; background: #0b0917; border: 1px solid var(--neon-cyan); color: var(--neon-cyan);">
+            ALL TOPICS
+          </span>
+        </div>
+        <div style="position: relative;">
+          <select id="arcadeTopicSelect" style="width: 100%; min-height: 42px; background: #17132e; border: 1.5px solid var(--border-retro); border-radius: 8px; color: #f5f3ff; font-family: var(--font-ui); font-size: 0.88rem; font-weight: 700; padding: 8px 12px; outline: none; cursor: pointer; transition: all 0.15s ease;">
+            <option value="">⚡ Select a Topic...</option>
+          </select>
+        </div>
+        <div id="modeWarningMsg" style="display: none; margin-top: 6px; font-size: 0.75rem; color: #f87171; font-weight: 700; font-family: var(--font-ui); padding: 4px 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px;">
+          ⚠️ Please select a topic to start playing in Topic mode!
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Mobile Games Stack (Direct Thumb Actions) -->
+    <main class="mobile-games-stack">
+
+      <!-- ==================== GAME 1: SKY DOMINATORS (FEATURED) ==================== -->
+      <article class="mobile-card theme-airstrike">
+        <header class="card-header-two-col">
+          <div class="card-icon-box card-icon-logo" title="Sky Dominators" aria-hidden="true">
+            <img src="assets/logo/sky_dominators_logo.png" alt="Sky Dominators Logo" class="card-logo-img" />
+          </div>
+          <div class="card-header-titles">
+            <h2 class="card-title">SKY DOMINATORS</h2>
+            <div class="card-season-subtitle">SEASON 1</div>
+            <div class="card-subtitle">Air Strike • Canyon Protocol</div>
+          </div>
+        </header>
+
+        <div class="card-body">
+          <p class="card-short-desc">
+            High-octane retro aerial combat! Shoot enemy helicopter formations and target synonyms to clear the canyon.
+          </p>
+          <div class="card-meta-row">
+            <span class="card-stat-badge">Arcade Flight Combat</span>
+          </div>
+        </div>
+
+        <a id="btnPlayAirStrike" href="air_strike_arcade_game%20(1).html" class="mobile-btn-play">
+          <span>⚡</span> Scramble Jets
+        </a>
+      </article>
+
+      <!-- ==================== GAME 2: QUICK DRAWN ==================== -->
+      <article class="mobile-card theme-duel">
+        <header class="card-header-two-col">
+          <div class="card-icon-box" aria-hidden="true">🤠</div>
+          <div class="card-header-titles">
+            <h2 class="card-title">QUICK DRAWN</h2>
+            <div class="card-subtitle">Synonym Shootout</div>
+          </div>
+        </header>
+
+        <div class="card-body">
+          <p class="card-short-desc">
+            Test your reflexes! Draw fast and pick the matching synonym before the dynamite fuse burns out.
+          </p>
+          <div class="card-meta-row">
+            <span id="statBestDuel" class="card-stat-badge">Personal Best: --</span>
+          </div>
+        </div>
+
+        <a id="btnPlayQuickDrawn" href="fast_drawn_wilhelm_scream_instructions%20(1).html" class="mobile-btn-play">
+          <span>⚡</span> Get to Shooting Range
+        </a>
+      </article>
+
+      <!-- ==================== GAME 3: WILD WEST POKER ==================== -->
+      <article class="mobile-card theme-poker">
+        <header class="card-header-two-col">
+          <div class="card-icon-box" aria-hidden="true">🃏</div>
+          <div class="card-header-titles">
+            <h2 class="card-title">WILD WEST POKER</h2>
+            <div class="card-subtitle">4-Card Synonym Poker</div>
+          </div>
+        </header>
+
+        <div class="card-body">
+          <p class="card-short-desc">
+            Match synonym pairs to build winning poker hands! Start with 5 chips and aim for 10 chips to win.
+          </p>
+          <div class="card-meta-row">
+            <span class="card-stat-badge">Starting with 5 chips</span>
+          </div>
+        </div>
+
+        <a id="btnPlayPoker" href="wild_west_vocabulary_poker_fixed.html" class="mobile-btn-play">
+          <span>⚡</span> Enter the Casino
+        </a>
+      </article>
+
+      <!-- ==================== GAME 4: CARTRIDGE BAY (IN DEVELOPMENT) ==================== -->
+      <article class="mobile-card theme-cartridge">
+        <header class="card-header-two-col">
+          <div class="card-icon-box" title="8-Bit Memory Cartridge Slot" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="2" width="18" height="16" rx="2" fill="#1b1736" stroke="#00F0FF" stroke-width="1.8"/>
+              <rect x="6" y="5" width="12" height="6" rx="1" fill="#00F0FF" fill-opacity="0.2" stroke="#00F0FF" stroke-width="1.2"/>
+              <line x1="8" y1="7.5" x2="16" y2="7.5" stroke="#00F0FF" stroke-width="1"/>
+              <rect x="5.5" y="13.5" width="2" height="2.5" fill="#00F0FF"/>
+              <rect x="9" y="13.5" width="2" height="2.5" fill="#00F0FF"/>
+              <rect x="13" y="13.5" width="2" height="2.5" fill="#00F0FF"/>
+              <rect x="16.5" y="13.5" width="2" height="2.5" fill="#00F0FF"/>
+              <rect x="5" y="18" width="2" height="3" fill="#FFD700"/>
+              <rect x="8" y="18" width="2" height="3" fill="#FFD700"/>
+              <rect x="11" y="18" width="2" height="3" fill="#FFD700"/>
+              <rect x="14" y="18" width="2" height="3" fill="#FFD700"/>
+              <rect x="17" y="18" width="2" height="3" fill="#FFD700"/>
+            </svg>
+          </div>
+          <div class="card-header-titles">
+            <h2 class="card-title">GAME 4</h2>
+            <div class="card-subtitle">Put in ROM / Plug Chip</div>
+          </div>
+        </header>
+
+        <div class="card-body">
+          <p class="card-short-desc">
+            Put in a game cartridge or plug in a memory chip to load your next 8-bit challenge!
+          </p>
+          <div class="card-meta-row">
+            <span class="card-in-dev-pill">IN DEVELOPMENT</span>
+          </div>
+        </div>
+
+        <button id="btnInsertCartridge" type="button" class="mobile-btn-cartridge in-dev-btn" disabled aria-disabled="true">
+          <span>🔒</span> IN DEVELOPMENT
+        </button>
+      </article>
+
+    </main>
+
+    <!-- Minimal Mobile Footer -->
+    <footer class="mobile-footer">
+      ARCADE SPACE • 8-BIT EDITION
+    </footer>
+
+  </div>
+
+  <!-- Retro Web Audio Engine & Fast Mobile Logic -->
+  <script>
+    (function () {
+      'use strict';
+
+      // =========================================================================
+      // 1. 8-BIT RETRO SOUND SYNTHESIZER (Pure Web Audio API)
+      // =========================================================================
+      class RetroAudioEngine {
+        constructor() {
+          this.ctx = null;
+          this.muted = false;
+        }
+
+        init() {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) this.ctx = new AudioCtx();
+          }
+          if (this.ctx && this.ctx.state === "suspended") {
+            this.ctx.resume();
+          }
+        }
+
+        toggleMute() {
+          this.muted = !this.muted;
+          return this.muted;
+        }
+
+        playCoin() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((freq, i) => {
+            const start = this.ctx.currentTime + i * 0.055;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(freq, start);
+            gain.gain.setValueAtTime(0.08, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.14);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(start);
+            osc.stop(start + 0.15);
+          });
+        }
+
+        playBlip() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "triangle";
+          osc.frequency.setValueAtTime(480, now);
+          osc.frequency.exponentialRampToValueAtTime(960, now + 0.05);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.07);
+        }
+
+        playCartridgeSnap() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = "sawtooth";
+          osc.frequency.setValueAtTime(140, now);
+          osc.frequency.exponentialRampToValueAtTime(35, now + 0.1);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.11);
+
+          setTimeout(() => {
+            if (!this.ctx || this.muted) return;
+            const t = this.ctx.currentTime;
+            const osc2 = this.ctx.createOscillator();
+            const gain2 = this.ctx.createGain();
+            osc2.type = "square";
+            osc2.frequency.setValueAtTime(1046.5, t);
+            osc2.frequency.setValueAtTime(2093, t + 0.05);
+            gain2.gain.setValueAtTime(0.1, t);
+            gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+            osc2.connect(gain2);
+            gain2.connect(this.ctx.destination);
+            osc2.start(t);
+            osc2.stop(t + 0.13);
+          }, 60);
+        }
+      }
+
+      const audio = new RetroAudioEngine();
+
+      // =========================================================================
+      // 2. USER PASSPORT & LOCAL WORDS DETECTION
+      // =========================================================================
+      function getDetectedUser() {
+        const params = new URLSearchParams(window.location.search);
+        const urlUser = params.get("user");
+        if (urlUser && urlUser.trim()) return urlUser.trim();
+
+        const keys = ["vocab_user", "username", "lexicalSpace_username", "currentUser"];
+        for (const k of keys) {
+          const val = localStorage.getItem(k);
+          if (val && val.trim()) {
+            const trimmed = val.trim();
+            if (trimmed.startsWith("{")) {
+              try {
+                const parsed = JSON.parse(trimmed);
+                if (parsed && parsed.username) return parsed.username.trim();
+              } catch (_) {}
+            } else {
+              return trimmed;
+            }
+          }
+        }
+        return "Guest Cowboy";
+      }
+
+      function sortTopicsNumericFirst(topics) {
+        return [...topics].sort((a, b) => {
+          const parseTopic = (t) => {
+            const match = String(t || "").trim().match(/^(\d+)(?:\.|\s|-|_)?(.*)$/);
+            if (match) {
+              return { hasNumber: true, num: parseInt(match[1], 10), rest: match[2].trim() };
+            }
+            return { hasNumber: false, num: Infinity, rest: String(t || "").trim() };
+          };
+
+          const parsedA = parseTopic(a);
+          const parsedB = parseTopic(b);
+
+          if (parsedA.hasNumber && parsedB.hasNumber) {
+            if (parsedA.num !== parsedB.num) return parsedA.num - parsedB.num;
+            return parsedA.rest.localeCompare(parsedB.rest, undefined, { sensitivity: 'base', numeric: true });
+          }
+
+          if (parsedA.hasNumber && !parsedB.hasNumber) return -1;
+          if (!parsedA.hasNumber && parsedB.hasNumber) return 1;
+
+          return parsedA.rest.localeCompare(parsedB.rest, undefined, { sensitivity: 'base', numeric: true });
+        });
+      }
+
+      async function queryIndexedDBWordData(username) {
+        return new Promise((resolve) => {
+          try {
+            if (!window.indexedDB) return resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
+            const req = indexedDB.open("LexicalSpaceDB", 1);
+            req.onerror = () => resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
+            req.onsuccess = (e) => {
+              const db = e.target.result;
+              if (!db.objectStoreNames.contains("words")) return resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
+              const tx = db.transaction("words", "readonly");
+              const store = tx.objectStore("words");
+              const getReq = store.getAll();
+              getReq.onerror = () => resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
+              getReq.onsuccess = () => {
+                const all = getReq.result || [];
+                const u = (username && username !== "Guest Cowboy") ? username.toLowerCase() : "";
+                const matched = all.filter(w => !u || ((w.username || "").trim().toLowerCase() === u));
+
+                const topicMap = new Map();
+                let synonymCount = 0;
+                matched.forEach(w => {
+                  const t = (w.topic || "").trim();
+                  if (t) {
+                    topicMap.set(t, (topicMap.get(t) || 0) + 1);
+                  }
+                  const syn = w.synonym1 || w.synonym || w.synonym2 || (Array.isArray(w.synonyms) && w.synonyms.length > 0);
+                  if (syn) synonymCount++;
+                });
+
+                const rawTopics = Array.from(topicMap.keys());
+                const sortedTopics = sortTopicsNumericFirst(rawTopics);
+
+                resolve({
+                  totalCount: u ? matched.length : all.length,
+                  synonymCount: synonymCount,
+                  topicMap,
+                  sortedTopics
+                });
+              };
+            };
+          } catch (_) {
+            resolve({ totalCount: 0, synonymCount: 0, topicMap: new Map(), sortedTopics: [] });
+          }
+        });
+      }
+
+      function getBestDuelScore(username) {
+        const u = username ? username.toLowerCase() : "guest";
+        try {
+          const val = parseInt(
+            localStorage.getItem("quickDrawn_bestScore_" + u) ||
+            localStorage.getItem("ls_qd_best_" + u),
+            10
+          );
+          return Number.isFinite(val) && val > 0 ? val : null;
+        } catch (_) {
+          return null;
+        }
+      }
+
+      // =========================================================================
+      // 3. MOBILE INITIALIZATION & TOUCH EVENTS
+      // =========================================================================
+      window.addEventListener("DOMContentLoaded", async () => {
+        const activeUser = getDetectedUser();
+        const domName = document.getElementById("playerName");
+        const domAvatar = document.getElementById("playerAvatar");
+        const domWordCount = document.getElementById("playerWordCount");
+        const domBestDuel = document.getElementById("statBestDuel");
+        const btnSoundToggle = document.getElementById("btnSoundToggle");
+        const soundIcon = document.getElementById("soundIcon");
+        const vocabModeSelect = document.getElementById("arcadeVocabModeSelect");
+        const vocabModeBadge = document.getElementById("vocabModeBadge");
+        const topicWrapper = document.getElementById("arcadeTopicWrapper");
+        const topicSelect = document.getElementById("arcadeTopicSelect");
+        const topicWordBadge = document.getElementById("topicWordCountBadge");
+        const modeWarningMsg = document.getElementById("modeWarningMsg");
+        const btnQD = document.getElementById("btnPlayQuickDrawn");
+        const btnPK = document.getElementById("btnPlayPoker");
+        const btnAS = document.getElementById("btnPlayAirStrike");
+
+        // Set student info
+        domName.textContent = activeUser;
+        domAvatar.textContent = (activeUser.charAt(0) || "G").toUpperCase();
+
+        // Best Duel Score
+        const bestScore = getBestDuelScore(activeUser);
+        if (domBestDuel) {
+          domBestDuel.textContent = bestScore ? `Personal Best: ${bestScore.toLocaleString()}` : "Personal Best: --";
+        }
+
+        // Query words and topics dynamically from LexicalSpaceDB
+        const wordData = await queryIndexedDBWordData(activeUser);
+        domWordCount.textContent = wordData.totalCount > 0 ? String(wordData.totalCount) : "24+";
+
+        // Restore saved mode & topic preferences
+        const urlParams = new URLSearchParams(window.location.search);
+        let selectedMode = (urlParams.get("mode") || sessionStorage.getItem("arcade_vocab_mode") || "full").trim().toLowerCase();
+        if (!["full", "topic"].includes(selectedMode)) {
+          selectedMode = "full";
+          sessionStorage.setItem("arcade_vocab_mode", "full");
+        }
+        if (vocabModeSelect) {
+          vocabModeSelect.value = selectedMode;
+        }
+
+        let selectedTopic = (urlParams.get("topic") || sessionStorage.getItem("arcade_selected_topic") || "").trim();
+
+        // Populate topic dropdown
+        if (topicSelect) {
+          topicSelect.innerHTML = `<option value="">⚡ Select a Topic...</option>`;
+          wordData.sortedTopics.forEach(t => {
+            const count = wordData.topicMap.get(t) || 0;
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = `${t} (${count} words)`;
+            topicSelect.appendChild(opt);
+          });
+
+          if (selectedTopic && wordData.sortedTopics.some(t => t.toLowerCase() === selectedTopic.toLowerCase())) {
+            topicSelect.value = selectedTopic;
+          } else {
+            selectedTopic = "";
+            topicSelect.value = "";
+          }
+        }
+
+        function updateGameLinks(mode, topic) {
+          const userParam = (activeUser && activeUser !== "Guest Cowboy") ? `user=${encodeURIComponent(activeUser)}` : "";
+          const modeParam = `mode=${encodeURIComponent(mode)}`;
+          const topicParam = (mode === "topic" && topic) ? `topic=${encodeURIComponent(topic)}` : "";
+          const returnUrlParam = `returnUrl=${encodeURIComponent(window.location.href)}`;
+
+          const queryParts = [userParam, modeParam, topicParam, returnUrlParam].filter(Boolean);
+          const queryString = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+
+          // Authoritative Production URLs
+          const PROD_QUICK_DRAWN_URL = "https://vuongtranvt1331-design.github.io/QuickDrawn/";
+          const PROD_POKER_URL = "https://vuongtranvt1331-design.github.io/Poker/";
+          const PROD_AIR_STRIKE_URL = "https://vuongtranvt1331-design.github.io/Sky_Dominators/";
+
+          // Automatically detect environment: GitHub Pages vs Local/File
+          const isGitHubPages = window.location.hostname.endsWith("github.io");
+          const qdUrl = isGitHubPages
+            ? `${PROD_QUICK_DRAWN_URL}${queryString}`
+            : `fast_drawn_wilhelm_scream_instructions%20(1).html${queryString}`;
+          const pkUrl = isGitHubPages
+            ? `${PROD_POKER_URL}${queryString}`
+            : `wild_west_vocabulary_poker_fixed.html${queryString}`;
+          const asUrl = isGitHubPages
+            ? `${PROD_AIR_STRIKE_URL}${queryString}`
+            : `air_strike_arcade_game%20(1).html${queryString}`;
+
+          if (btnQD) {
+            btnQD.href = qdUrl;
+          }
+          if (btnPK) {
+            btnPK.href = pkUrl;
+          }
+          if (btnAS) {
+            btnAS.href = asUrl;
+          }
+
+          if (modeWarningMsg) {
+            modeWarningMsg.style.display = "none";
+          }
+
+          if (mode === "full") {
+            if (vocabModeBadge) {
+              vocabModeBadge.textContent = "FULL VOCABULARY";
+              vocabModeBadge.style.color = "var(--neon-yellow)";
+              vocabModeBadge.style.borderColor = "var(--neon-yellow)";
+            }
+            if (topicWordBadge) topicWordBadge.textContent = `${wordData.totalCount || '24+'} WORDS`;
+            if (topicWrapper) topicWrapper.style.opacity = "0.65";
+          } else if (mode === "topic") {
+            if (vocabModeBadge) {
+              vocabModeBadge.textContent = "TOPIC";
+              vocabModeBadge.style.color = "var(--neon-cyan)";
+              vocabModeBadge.style.borderColor = "var(--neon-cyan)";
+            }
+            if (topicWrapper) topicWrapper.style.opacity = "1";
+            if (topicWordBadge) {
+              if (topic) {
+                const count = wordData.topicMap.get(topic) || 0;
+                topicWordBadge.textContent = `${count} WORDS`;
+              } else {
+                topicWordBadge.textContent = "SELECT TOPIC";
+              }
+            }
+          }
+        }
+
+        // Initialize game links with current mode and topic
+        updateGameLinks(selectedMode, selectedTopic);
+
+        // Vocab mode change event
+        vocabModeSelect?.addEventListener("change", () => {
+          selectedMode = vocabModeSelect.value.trim().toLowerCase();
+          if (!["full", "topic"].includes(selectedMode)) {
+            selectedMode = "full";
+          }
+          sessionStorage.setItem("arcade_vocab_mode", selectedMode);
+          updateGameLinks(selectedMode, selectedTopic);
+          audio.playBlip();
+        });
+
+        // Topic select change event
+        topicSelect?.addEventListener("change", () => {
+          selectedTopic = topicSelect.value.trim();
+          sessionStorage.setItem("arcade_selected_topic", selectedTopic);
+          updateGameLinks(selectedMode, selectedTopic);
+          audio.playBlip();
+        });
+
+        // Sound toggle
+        btnSoundToggle.addEventListener("click", () => {
+          const isMuted = audio.toggleMute();
+          soundIcon.textContent = isMuted ? "🔇" : "🔊";
+          if (!isMuted) audio.playBlip();
+        });
+
+        // Touch feedback on buttons & topic validation
+        document.querySelectorAll(".mobile-btn-play").forEach(btn => {
+          btn.addEventListener("click", (e) => {
+            if (selectedMode === "topic" && !selectedTopic) {
+              e.preventDefault();
+              audio.playBlip();
+              if (modeWarningMsg) {
+                modeWarningMsg.style.display = "block";
+                modeWarningMsg.textContent = "⚠️ Please select a vocabulary topic before starting in Topic mode!";
+              }
+              topicSelect?.focus();
+              return;
+            }
+            audio.playCoin();
+          });
+        });
+
+        // Configure return navigation to Lexical Space
+        const PROD_LS_URL = "https://vuongtranvt1331-design.github.io/Lexical_Space/";
+        const isGitHubPages = window.location.hostname.endsWith("github.io");
+        const returnUrlParam = urlParams.get("returnUrl");
+        const defaultLsUrl = isGitHubPages ? PROD_LS_URL : "index (1).html";
+        const finalLsUrl = returnUrlParam || defaultLsUrl;
+
+        const btnBackToLS = document.getElementById("btnBackToLS");
+        if (btnBackToLS) {
+          btnBackToLS.href = finalLsUrl;
+          btnBackToLS.addEventListener("click", () => {
+            audio.playBlip();
+          });
+        }
+
+        // 8-Bit Cartridge Bay Insert Interaction
+        const btnCartridge = document.getElementById("btnInsertCartridge");
+        if (btnCartridge) {
+          btnCartridge.addEventListener("click", () => {
+            audio.playCartridgeSnap();
+            btnCartridge.innerHTML = "<span>💾</span> CARTRIDGE INSERTED! [READY]";
+            btnCartridge.style.borderColor = "var(--neon-green)";
+            btnCartridge.style.color = "var(--neon-green)";
+            btnCartridge.style.boxShadow = "0 0 16px rgba(0, 255, 136, 0.4)";
+            setTimeout(() => {
+              btnCartridge.innerHTML = "<span>📼</span> PUT IN CARTRIDGE / PLUG CHIP";
+              btnCartridge.style.borderColor = "";
+              btnCartridge.style.color = "";
+              btnCartridge.style.boxShadow = "";
+            }, 2400);
+          });
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
