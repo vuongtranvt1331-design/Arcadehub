@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Arcade Space — 8-Bit Mobile Hub</title>
+  <title>ArcadeSpace — 8-Bit Mobile Hub</title>
   
   <!-- Retro 8-Bit & Mobile Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -178,6 +178,31 @@
       transform: scale(0.95);
     }
 
+    /* Shared ArcadeSpace identity; the loader and header use the same card. */
+    .header-logo-card {
+      --space-brand-size: 50px;
+      flex-shrink: 0;
+      cursor: pointer;
+      transition: transform 214.286ms cubic-bezier(0.25, 1, 0.5, 1);
+      will-change: transform, opacity;
+    }
+    .header-logo-card:hover { transform: scale(1.05); }
+    .header-brand-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+    }
+    .header-terminal-tag {
+      font-family: var(--font-pixel);
+      font-size: 0.52rem;
+      color: var(--neon-cyan);
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+      margin-top: 4px;
+      text-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+    }
+
     /* 8-Bit Coin Logo Header */
     .logo-container {
       text-align: center;
@@ -188,7 +213,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 12px;
     }
 
     .mobile-logo-title {
@@ -204,29 +229,6 @@
 
     .mobile-logo-title span {
       color: var(--neon-cyan);
-    }
-
-    /* 8-Bit Pixel Coin Animation */
-    .coin-8bit {
-      width: 24px;
-      height: 24px;
-      flex-shrink: 0;
-      animation: coin-bob 2.2s ease-in-out infinite;
-      filter: drop-shadow(0 0 6px rgba(255, 183, 3, 0.5));
-    }
-
-    .coin-8bit.alt {
-      animation-delay: 1.1s;
-    }
-
-    @keyframes coin-bob {
-      0%, 100% {
-        transform: translateY(0) rotate(0deg);
-      }
-      50% {
-        transform: translateY(-3px) rotate(6deg) scale(1.06);
-        filter: drop-shadow(0 0 10px rgba(255, 183, 3, 0.8));
-      }
     }
 
     /* Minimal Student Status Card */
@@ -609,8 +611,31 @@
       letter-spacing: 0.5px;
     }
   </style>
+  <link rel="stylesheet" href="assets/space-loader.css?v=cinematic2">
+  <noscript><style>.space-loader { display: none; }</style></noscript>
+  <script>
+    // Release the application even if the independent loader script cannot load.
+    window.__spaceLoaderFailsafe = window.setTimeout(function () {
+      document.getElementById('space-loader')?.remove();
+    }, 30000);
+  </script>
+  <script defer src="assets/space-loader.js?v=cinematic4"></script>
 </head>
 <body>
+  <section id="space-loader" class="space-loader space-loader--as" data-space-loader="as"
+           role="status" aria-label="Loading ArcadeSpace" aria-busy="true">
+    <audio data-loader-audio preload="auto" src="assets/as-start-normalized.wav?v=cinematic2" hidden></audio>
+    <div class="space-loader__stage" aria-hidden="true">
+      <div class="space-loader__logo">
+        <div class="space-brand space-brand--as">
+          <span class="space-brand__mark"><span>&gt;</span><span class="space-brand__a"><span class="slash">/</span><span class="backslash">\</span></span></span>
+        </div>
+      </div>
+      <div class="space-loader__prompt">
+        <span data-loader-lead><span>&gt;</span><span class="space-brand__a"><span class="slash">/</span><span class="backslash">\</span></span></span><span data-loader-text></span><span class="space-loader__cursor" data-loader-cursor>_</span>
+      </div>
+    </div>
+  </section>
 
   <!-- Ambient 20% Neon Atmosphere -->
   <div class="ambient-glow-top"></div>
@@ -632,47 +657,15 @@
     <!-- Logo Header with 8-Bit Golden Pixel Coins -->
     <header class="logo-container">
       <div class="mobile-logo-row">
-        <!-- 8-Bit Pixel Coin (Left) -->
-        <svg class="coin-8bit" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="7" y="1" width="10" height="2" fill="#FFE066"/>
-          <rect x="7" y="21" width="10" height="2" fill="#D48B00"/>
-          <rect x="3" y="3" width="4" height="2" fill="#FFE066"/>
-          <rect x="17" y="3" width="4" height="2" fill="#FFE066"/>
-          <rect x="3" y="19" width="4" height="2" fill="#D48B00"/>
-          <rect x="17" y="19" width="4" height="2" fill="#D48B00"/>
-          <rect x="1" y="5" width="2" height="14" fill="#FFB703"/>
-          <rect x="21" y="5" width="2" height="14" fill="#FFB703"/>
-          <rect x="3" y="5" width="18" height="14" fill="#FFB703"/>
-          <rect x="7" y="3" width="10" height="18" fill="#FFC324"/>
-          <rect x="4" y="6" width="2" height="12" fill="#FFF2A3"/>
-          <rect x="6" y="4" width="12" height="2" fill="#FFF2A3"/>
-          <rect x="11" y="7" width="2" height="10" fill="#7D4E00"/>
-          <rect x="8" y="10" width="8" height="4" fill="#7D4E00"/>
-          <rect x="10" y="9" width="4" height="6" fill="#FFE066"/>
-          <rect x="11" y="11" width="2" height="2" fill="#FFFFFF"/>
-        </svg>
+        <!-- Task 1: Static Retro Game Card Logo -->
+        <div class="space-brand space-brand--as header-logo-card" id="headerLogoCard" title="ArcadeSpace Retro Game Card" aria-label="ArcadeSpace Logo">
+          <span class="space-brand__mark"><span>&gt;</span><span class="space-brand__a"><span class="slash">/</span><span class="backslash">\</span></span></span>
+        </div>
 
-        <h1 class="mobile-logo-title">ARCADE <span>SPACE</span></h1>
-
-        <!-- 8-Bit Pixel Coin (Right, Alt Timing) -->
-        <svg class="coin-8bit alt" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <rect x="7" y="1" width="10" height="2" fill="#FFE066"/>
-          <rect x="7" y="21" width="10" height="2" fill="#D48B00"/>
-          <rect x="3" y="3" width="4" height="2" fill="#FFE066"/>
-          <rect x="17" y="3" width="4" height="2" fill="#FFE066"/>
-          <rect x="3" y="19" width="4" height="2" fill="#D48B00"/>
-          <rect x="17" y="19" width="4" height="2" fill="#D48B00"/>
-          <rect x="1" y="5" width="2" height="14" fill="#FFB703"/>
-          <rect x="21" y="5" width="2" height="14" fill="#FFB703"/>
-          <rect x="3" y="5" width="18" height="14" fill="#FFB703"/>
-          <rect x="7" y="3" width="10" height="18" fill="#FFC324"/>
-          <rect x="4" y="6" width="2" height="12" fill="#FFF2A3"/>
-          <rect x="6" y="4" width="12" height="2" fill="#FFF2A3"/>
-          <rect x="11" y="7" width="2" height="10" fill="#7D4E00"/>
-          <rect x="8" y="10" width="8" height="4" fill="#7D4E00"/>
-          <rect x="10" y="9" width="4" height="6" fill="#FFE066"/>
-          <rect x="11" y="11" width="2" height="2" fill="#FFFFFF"/>
-        </svg>
+        <div class="header-brand-info">
+          <h1 class="mobile-logo-title">ARCADE <span>SPACE</span></h1>
+          <div class="header-terminal-tag">&gt;<span class="space-brand__a"><span class="slash">/</span><span class="backslash">\</span></span>rcadeSpace_</div>
+        </div>
       </div>
     </header>
 
@@ -928,6 +921,104 @@
           gain.connect(this.ctx.destination);
           osc.start(now);
           osc.stop(now + 0.07);
+        }
+
+        // Tactile Mechanical Keyboard / Gamepad Switch Sound
+        playKeyClick() {
+          if (this.muted) return;
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+          const jitter = 0.92 + Math.random() * 0.16; // Subtle organic pitch variation
+
+          // 1. Sharp microswitch transient snap (click)
+          const clickOsc = this.ctx.createOscillator();
+          const clickGain = this.ctx.createGain();
+          clickOsc.type = "triangle";
+          clickOsc.frequency.setValueAtTime(1200 * jitter, now);
+          clickOsc.frequency.exponentialRampToValueAtTime(140 * jitter, now + 0.022);
+          clickGain.gain.setValueAtTime(0.22, now);
+          clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.024);
+          clickOsc.connect(clickGain);
+          clickGain.connect(this.ctx.destination);
+          clickOsc.start(now);
+          clickOsc.stop(now + 0.026);
+
+          // 2. Plastic bottom-out resonant thump (gamepad button feel)
+          const thudOsc = this.ctx.createOscillator();
+          const thudGain = this.ctx.createGain();
+          thudOsc.type = "sine";
+          thudOsc.frequency.setValueAtTime(180 * jitter, now);
+          thudOsc.frequency.exponentialRampToValueAtTime(45 * jitter, now + 0.035);
+          thudGain.gain.setValueAtTime(0.16, now);
+          thudGain.gain.exponentialRampToValueAtTime(0.001, now + 0.038);
+          thudOsc.connect(thudGain);
+          thudGain.connect(this.ctx.destination);
+          thudOsc.start(now);
+          thudOsc.stop(now + 0.04);
+        }
+
+        playTypewriterTick() {
+          this.playKeyClick();
+        }
+
+        playStartSound() {
+          if (this.muted) return;
+          try {
+            const fileAudio = new Audio('assets/as-start.mp3');
+            fileAudio.play().catch(() => {
+              const wavAudio = new Audio('assets/as-start.wav');
+              wavAudio.play().catch(() => {});
+            });
+          } catch (_) {}
+
+          this.init();
+          if (!this.ctx) return;
+          const now = this.ctx.currentTime;
+
+          // 1. Mechanical arcade microswitch click (0.0 to 0.09s)
+          const clickOsc = this.ctx.createOscillator();
+          const clickGain = this.ctx.createGain();
+          clickOsc.type = "triangle";
+          clickOsc.frequency.setValueAtTime(200, now);
+          clickOsc.frequency.exponentialRampToValueAtTime(25, now + 0.08);
+          clickGain.gain.setValueAtTime(0.32, now);
+          clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+          clickOsc.connect(clickGain);
+          clickGain.connect(this.ctx.destination);
+          clickOsc.start(now);
+          clickOsc.stop(now + 0.09);
+
+          // 2. 8-Bit Laser "Pew-Pew" Sweep (0.07s to 0.55s)
+          const laserTime = now + 0.07;
+          const laserOsc = this.ctx.createOscillator();
+          const laserGain = this.ctx.createGain();
+          laserOsc.type = "square";
+          laserOsc.frequency.setValueAtTime(2400, laserTime);
+          laserOsc.frequency.exponentialRampToValueAtTime(160, laserTime + 0.45);
+          laserGain.gain.setValueAtTime(0.2, laserTime);
+          laserGain.gain.exponentialRampToValueAtTime(0.001, laserTime + 0.48);
+          laserOsc.connect(laserGain);
+          laserGain.connect(this.ctx.destination);
+          laserOsc.start(laserTime);
+          laserOsc.stop(laserTime + 0.49);
+
+          // 3. Second Laser & Power-Up Arpeggio Chime (0.50s to 2.0s)
+          const arpTime = now + 0.50;
+          const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51, 1567.98];
+          notes.forEach((freq, idx) => {
+            const t = arpTime + idx * 0.11;
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0.12, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.36);
+          });
         }
 
         playCartridgeSnap() {
@@ -1269,6 +1360,18 @@
           btnBackToLS.href = finalLsUrl;
           btnBackToLS.addEventListener("click", () => {
             audio.playBlip();
+          });
+        }
+
+        // ArcadeSpace Retro Game Card Header Interaction
+        const headerLogo = document.getElementById("headerLogoCard");
+        if (headerLogo) {
+          headerLogo.addEventListener("click", () => {
+            audio.playStartSound();
+            headerLogo.style.transform = "scale(1.12)";
+            setTimeout(() => {
+              headerLogo.style.transform = "";
+            }, 300 / 0.7);
           });
         }
 
