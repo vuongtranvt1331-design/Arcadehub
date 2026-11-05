@@ -2319,6 +2319,7 @@
         </div>
     </div>
 
+    <script src="assets/lexical-vocabulary.js"></script>
     <script>
         /**
          * AIR STRIKE: CANYON PROTOCOL — REBUILT WITH HELICOPTER SQUADRON & DANGER HUD
@@ -2743,8 +2744,6 @@
 
         class VocabService {
             constructor() {
-                this.dbName = "LexicalSpaceDB";
-                this.storeName = "words";
                 this.vocabularyList = [];
                 this.allDistractorPool = [];
                 this.activeUser = "";
@@ -2775,7 +2774,7 @@
 
             async init() {
                 const urlParams = new URLSearchParams(window.location.search);
-                this.activeUser = urlParams.get('user') || localStorage.getItem('vocab_user') || "";
+                this.activeUser = window.lexicalVocabulary?.activeProfile() || "";
                 const modeParam = urlParams.get('mode') || "";
                 const topicParam = urlParams.get('topic') || "";
 
@@ -2812,11 +2811,9 @@
                     text.textContent = `VOCABULARY READY (${this.vocabularyList.length} IELTS WORDS)`;
                 }
 
-                // 2. Shared IndexedDB Query (LexicalSpaceDB v1) with safety timeout
+                // 2. Read the existing LexicalSpace store with the reader's safety timeout.
                 try {
-                    const timeoutPromise = new Promise(resolve => setTimeout(() => resolve('TIMEOUT'), 1200));
-                    const idbPromise = this.fetchFromIndexedDB(this.activeUser, modeParam === 'topic' ? topicParam : "");
-                    const idbResult = await Promise.race([idbPromise, timeoutPromise]);
+                    const idbResult = await this.fetchFromIndexedDB(this.activeUser, modeParam === 'topic' ? topicParam : "");
 
                     if (Array.isArray(idbResult) && idbResult.length > 0) {
                         this.vocabularyList = idbResult;
@@ -2869,126 +2866,40 @@
                 this.allDistractorPool = Array.from(poolSet);
             }
 
-            fetchFromIndexedDB(username, targetTopic = "") {
-                return new Promise((resolve) => {
-                    if (!window.indexedDB) return resolve(null);
-                    const req = indexedDB.open(this.dbName, 1);
-                    req.onerror = () => resolve(null);
-                    req.onsuccess = (e) => {
-                        const db = e.target.result;
-                        if (!db.objectStoreNames.contains(this.storeName)) {
-                            db.close();
-                            return resolve(null);
-                        }
-                        const tx = db.transaction(this.storeName, 'readonly');
-                        const store = tx.objectStore(this.storeName);
-                        const getAllReq = store.getAll();
+            async fetchFromIndexedDB(username, targetTopic = "") {
+                const reader = window.lexicalVocabulary;
+                const rawRecords = await reader?.readWords(username, { includeLegacyUnassigned: true });
+                if (!rawRecords) return null;
 
-                        getAllReq.onerror = () => { db.close(); resolve(null); };
-                        getAllReq.onsuccess = () => {
-                            const rawRecords = getAllReq.result || [];
-                            db.close();
+                const topicNorm = this.normalize(targetTopic);
+                const playable = [];
+                const matchingTopic = [];
+                for (const record of rawRecords) {
+                    const word = record.word.trim();
+                    const target = this.normalize(word);
+                    const listed = Array.isArray(record.synonyms) ? record.synonyms
+                        : typeof record.synonyms === 'string' ? record.synonyms.split(',') : [];
+                    const synonyms = [...new Set([record.synonym1, record.synonym2, ...listed]
+                        .filter(value => typeof value === 'string')
+                        .map(value => value.trim())
+                        .filter(value => value && this.normalize(value) !== target))];
+                    if (!synonyms.length) continue;
 
-                            const userNorm = this.normalize(username);
-                            const topicNorm = this.normalize(targetTopic);
-                            const validRecords = [];
-
-                            for (const rec of rawRecords) {
-                                if (!rec || !rec.word) continue;
-                                const recUser = this.normalize(rec.username);
-                                if (userNorm && recUser && recUser !== userNorm) continue;
-                                if (topicNorm) {
-                                    const recTopic = this.normalize(rec.topic);
-                                    if (recTopic && recTopic !== topicNorm) continue;
-                                }
-
-                                const wordStr = rec.word.trim();
-                                const synSet = new Set();
-                                const wordNorm = this.normalize(wordStr);
-
-                                [rec.synonym1, rec.synonym2].forEach(s => {
-                                    if (s && typeof s === 'string') {
-                                        const clean = s.trim();
-                                        if (clean.length > 0 && this.normalize(clean) !== wordNorm) {
-                                            synSet.add(clean);
-                                        }
-                                    }
-                                });
-
-                                if (Array.isArray(rec.synonyms)) {
-                                    rec.synonyms.forEach(s => {
-                                        if (s && typeof s === 'string') {
-                                            const clean = s.trim();
-                                            if (clean.length > 0 && this.normalize(clean) !== wordNorm) {
-                                                synSet.add(clean);
-                                            }
-                                        }
-                                    });
-                                } else if (typeof rec.synonyms === 'string' && rec.synonyms.trim()) {
-                                    rec.synonyms.split(',').forEach(s => {
-                                        const clean = s.trim();
-                                        if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                                    });
-                                }
-
-                                if (synSet.size > 0) {
-                                    validRecords.push({
-                                        word: wordStr,
-                                        synonyms: Array.from(synSet),
-                                        meaning: rec.meaning || "",
-                                        topic: rec.topic || "General",
-                                        memoryStatus: rec.memoryStatus || 'not_remembered',
-                                        hasBeenStudied: !!rec.hasBeenStudied
-                                    });
-                                }
-                            }
-
-                            // If specific topic had no matches, attempt all topics for user
-                            if (validRecords.length === 0 && topicNorm) {
-                                for (const rec of rawRecords) {
-                                    if (!rec || !rec.word) continue;
-                                    const recUser = this.normalize(rec.username);
-                                    if (userNorm && recUser && recUser !== userNorm) continue;
-
-                                    const wordStr = rec.word.trim();
-                                    const synSet = new Set();
-                                    const wordNorm = this.normalize(wordStr);
-                                    [rec.synonym1, rec.synonym2].forEach(s => {
-                                        if (s && typeof s === 'string') {
-                                            const clean = s.trim();
-                                            if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                                        }
-                                    });
-                                    if (Array.isArray(rec.synonyms)) {
-                                        rec.synonyms.forEach(s => {
-                                            if (s && typeof s === 'string') {
-                                                const clean = s.trim();
-                                                if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                                            }
-                                        });
-                                    } else if (typeof rec.synonyms === 'string' && rec.synonyms.trim()) {
-                                        rec.synonyms.split(',').forEach(s => {
-                                            const clean = s.trim();
-                                            if (clean.length > 0 && this.normalize(clean) !== wordNorm) synSet.add(clean);
-                                        });
-                                    }
-                                    if (synSet.size > 0) {
-                                        validRecords.push({
-                                            word: wordStr,
-                                            synonyms: Array.from(synSet),
-                                            meaning: rec.meaning || "",
-                                            topic: rec.topic || "General",
-                                            memoryStatus: rec.memoryStatus || 'not_remembered',
-                                            hasBeenStudied: !!rec.hasBeenStudied
-                                        });
-                                    }
-                                }
-                            }
-
-                            resolve(validRecords.length > 0 ? validRecords : null);
-                        };
+                    const entry = {
+                        word,
+                        synonyms,
+                        meaning: record.meaning || "",
+                        topic: record.topic || "General",
+                        memoryStatus: record.memoryStatus || 'not_remembered',
+                        hasBeenStudied: !!record.hasBeenStudied
                     };
-                });
+                    playable.push(entry);
+                    const topics = reader.topicsOf(record);
+                    if (topicNorm && (!topics.length || topics.some(topic => this.normalize(topic) === topicNorm))) {
+                        matchingTopic.push(entry);
+                    }
+                }
+                return matchingTopic.length ? matchingTopic : playable;
             }
 
             isValidVocabEntry(entry) {

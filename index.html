@@ -620,6 +620,7 @@
     }, 30000);
   </script>
   <script defer src="assets/space-loader.js?v=cinematic4"></script>
+  <script src="assets/lexical-vocabulary.js"></script>
 </head>
 <body>
   <section id="space-loader" class="space-loader space-loader--as" data-space-loader="as"
@@ -1061,29 +1062,6 @@
       // =========================================================================
       // 2. USER PASSPORT & LOCAL WORDS DETECTION
       // =========================================================================
-      function getDetectedUser() {
-        const params = new URLSearchParams(window.location.search);
-        const urlUser = params.get("user");
-        if (urlUser && urlUser.trim()) return urlUser.trim();
-
-        const keys = ["vocab_user", "username", "lexicalSpace_username", "currentUser"];
-        for (const k of keys) {
-          const val = localStorage.getItem(k);
-          if (val && val.trim()) {
-            const trimmed = val.trim();
-            if (trimmed.startsWith("{")) {
-              try {
-                const parsed = JSON.parse(trimmed);
-                if (parsed && parsed.username) return parsed.username.trim();
-              } catch (_) {}
-            } else {
-              return trimmed;
-            }
-          }
-        }
-        return "Guest Cowboy";
-      }
-
       function sortTopicsNumericFirst(topics) {
         return [...topics].sort((a, b) => {
           const parseTopic = (t) => {
@@ -1110,49 +1088,17 @@
       }
 
       async function queryIndexedDBWordData(username) {
-        return new Promise((resolve) => {
-          try {
-            if (!window.indexedDB) return resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
-            const req = indexedDB.open("LexicalSpaceDB", 1);
-            req.onerror = () => resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
-            req.onsuccess = (e) => {
-              const db = e.target.result;
-              if (!db.objectStoreNames.contains("words")) return resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
-              const tx = db.transaction("words", "readonly");
-              const store = tx.objectStore("words");
-              const getReq = store.getAll();
-              getReq.onerror = () => resolve({ totalCount: 0, topicMap: new Map(), sortedTopics: [] });
-              getReq.onsuccess = () => {
-                const all = getReq.result || [];
-                const u = (username && username !== "Guest Cowboy") ? username.toLowerCase() : "";
-                const matched = all.filter(w => !u || ((w.username || "").trim().toLowerCase() === u));
-
-                const topicMap = new Map();
-                let synonymCount = 0;
-                matched.forEach(w => {
-                  const t = (w.topic || "").trim();
-                  if (t) {
-                    topicMap.set(t, (topicMap.get(t) || 0) + 1);
-                  }
-                  const syn = w.synonym1 || w.synonym || w.synonym2 || (Array.isArray(w.synonyms) && w.synonyms.length > 0);
-                  if (syn) synonymCount++;
-                });
-
-                const rawTopics = Array.from(topicMap.keys());
-                const sortedTopics = sortTopicsNumericFirst(rawTopics);
-
-                resolve({
-                  totalCount: u ? matched.length : all.length,
-                  synonymCount: synonymCount,
-                  topicMap,
-                  sortedTopics
-                });
-              };
-            };
-          } catch (_) {
-            resolve({ totalCount: 0, synonymCount: 0, topicMap: new Map(), sortedTopics: [] });
+        const words = await window.lexicalVocabulary?.readWords(username) || [];
+        const topicMap = new Map();
+        let synonymCount = 0;
+        for (const word of words) {
+          for (const topic of window.lexicalVocabulary.topicsOf(word)) {
+            topicMap.set(topic, (topicMap.get(topic) || 0) + 1);
           }
-        });
+          const hasSynonyms = word.synonym1 || word.synonym || word.synonym2 || (Array.isArray(word.synonyms) && word.synonyms.length > 0);
+          if (hasSynonyms) synonymCount++;
+        }
+        return { totalCount: words.length, synonymCount, topicMap, sortedTopics: sortTopicsNumericFirst(topicMap.keys()) };
       }
 
       function getBestDuelScore(username) {
@@ -1173,7 +1119,8 @@
       // 3. MOBILE INITIALIZATION & TOUCH EVENTS
       // =========================================================================
       window.addEventListener("DOMContentLoaded", async () => {
-        const activeUser = getDetectedUser();
+        const profile = window.lexicalVocabulary?.activeProfile() || "";
+        const activeUser = profile || "Guest Cowboy";
         const domName = document.getElementById("playerName");
         const domAvatar = document.getElementById("playerAvatar");
         const domWordCount = document.getElementById("playerWordCount");
@@ -1201,7 +1148,7 @@
         }
 
         // Query words and topics dynamically from LexicalSpaceDB
-        const wordData = await queryIndexedDBWordData(activeUser);
+        const wordData = await queryIndexedDBWordData(profile);
         domWordCount.textContent = wordData.totalCount > 0 ? String(wordData.totalCount) : "24+";
 
         // Restore saved mode & topic preferences
@@ -1237,7 +1184,7 @@
         }
 
         function updateGameLinks(mode, topic) {
-          const userParam = (activeUser && activeUser !== "Guest Cowboy") ? `user=${encodeURIComponent(activeUser)}` : "";
+          const userParam = profile ? `user=${encodeURIComponent(profile)}` : "";
           const modeParam = `mode=${encodeURIComponent(mode)}`;
           const topicParam = (mode === "topic" && topic) ? `topic=${encodeURIComponent(topic)}` : "";
           const returnUrlParam = `returnUrl=${encodeURIComponent(window.location.href)}`;
